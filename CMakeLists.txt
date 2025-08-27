@@ -3,4 +3,4 @@ project(CppExes)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(CppExes main.cpp)
+add_executable(CppExes task-cli.cpp)
