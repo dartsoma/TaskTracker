@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <ctime>
 #include <chrono>
-#include <format>
+
 
 
 using namespace std;
@@ -37,8 +37,6 @@ void addTask(json& taskArray, string taskDesc = "") {
 
 void taskDelete(const int idNum, json& tasks) {
 
-    bool taskDeleted = false;
-
     for (auto it = tasks.begin(); it != tasks.end(); ++it) {
         if ((*it)["Id"] == idNum) {
             tasks.erase(it);
@@ -56,7 +54,7 @@ void taskDelete(const int idNum, json& tasks) {
 }
 
 
-void updateTask(int idNum, json& tasks, const string& newDesc) {
+void updateTask(json& tasks, const string& newDesc, const int idNum = 0) {
 
     for (auto& task : tasks) {
         if (task["Id"] == idNum) {
@@ -68,63 +66,121 @@ void updateTask(int idNum, json& tasks, const string& newDesc) {
 
 }
 
-json jsonInit(const string& newDesc = "") {
+void updateStatus(json& tasks, const string& newStatus, const int idNum = 0) {
+
+    for (auto& task : tasks) {
+        if (task["Id"] == idNum) {
+            task["Description"] = newStatus;
+            task["UpdatedAt"] = getTime();
+            break;
+        }
+    }
+
+}
+
+
+
+
+json jsonInit() {
     json j;
     j["Tasks"] = json::array();
     return j;
 }
 
-void statusUpdate() {}
 
-void listTasks() {
+void listTasks(json& tasks, const string& status = "") {
 
-
-}
-
-void cmdParser(int c, char** v) {
-
-    for (int i = c - 1; i >= 0; --i) {
-        string s = v[i];
-
-    }
-
-
-}
-
-    int main (int argc, char** argv) {
-
-        cmdParser(argc, argv);
-
-        string jsonFile = "taskss.json";
-        std::ifstream file(jsonFile);
-
-        // Check if Jsons been made already
-        if (file.good()) {
-            json data = json::parse(file);
-
-            json& tasks = data["Tasks"];
-            updateTask(1, tasks, "The man I want to kill is you");
-
-            ofstream jsonOut("tasks.json");
-            jsonOut << data.dump(4);
-        } else {
-            // Make new Json with Preset
-
-
-
-            json taskArray = jsonInit();
-            json& tasks = taskArray["Tasks"];
-
-            addTask(taskArray);
-            addTask(taskArray);
-            addTask(taskArray);
-            addTask(taskArray);
-
-            taskDelete(0, tasks);
-
-            ofstream jsonOut("taskDefault.json");
-            jsonOut << taskArray.dump(4);
-
-            // cout << jsonNew.dump(4) << endl;
+    for (auto& task : tasks) {
+        if (task["Status"] == status && !status.empty()) {
+            cout << task["Description"] << endl;
         }
     }
+
+}
+
+int main(int c, char** v) {
+
+    string jsonFile = "tasks.json";
+    std::ifstream file(jsonFile);
+
+    json taskArray;
+    string desc;
+    int idNum = 0;
+    string v1, v2, v3;
+
+    // Check for pre-existing file
+    if (!file.is_open()) {
+        taskArray = jsonInit();
+    } else {
+        // If file is empty
+        file.seekg(0, ios::end);
+        if (file.tellg() == 0) {
+            taskArray = jsonInit();
+        } else {
+            file.seekg(0, ios::beg);
+            taskArray = json::parse(file);
+        }
+        file.close();
+    }
+    // Cmd Arguments
+    switch (c) {
+        case 1:
+            cout << "What";
+            exit(1);
+        case 2:
+            v1 = v[1];
+            v2 = "";
+            v3 = "";
+            break;
+        case 3:
+            v1 = v[1];
+            v2 = v[2];
+            v3 = "";
+            break;
+
+        default:
+            v1 = v[1];
+            v2 = v[2];
+            v3 = v[3];
+            cerr << "Warning: Too many Arguments" << endl;
+            break;
+    }
+
+
+    if (isdigit(atoi(v2.c_str()))) {
+        idNum = atoi(v2.c_str());
+        desc = v3;
+    } else if (v1!="list") {
+        desc = v2;
+    }
+
+
+    ofstream newFile(jsonFile);
+
+    if (v1=="add") {
+
+        addTask(taskArray, desc);
+        newFile << taskArray.dump(4);
+    } else if (v1=="update") {
+        updateTask(taskArray, desc, idNum);
+        newFile << taskArray.dump(4);
+    } else if (v1=="delete") {
+        taskDelete(idNum, taskArray);
+        newFile << taskArray.dump(4);
+    } else if (v1=="list") {
+
+        if (v2 == "done") {
+            listTasks(taskArray, "done");
+        }
+        else if (v2 == "todo") {
+            listTasks(taskArray, "todo");
+        }
+        else if (v2 == "in-progress") {
+            listTasks(taskArray, "in-progress");
+        }
+
+    } else if (v1.substr(0,3) == "mark") {
+        updateStatus(taskArray, v1.substr(5,v1.length()-1),idNum);
+    }
+
+}
