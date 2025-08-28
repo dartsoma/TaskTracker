@@ -1,18 +1,18 @@
 {
-  "Tasks": [
-    {
-      "id": 0,
-      "description": "",
-      "status": "",
-      "createdAt": "",
-      "updatedAt": ""
-    },
-    {
-      "id": "1",
-      "description": "",
-      "status": "",
-      "createdAt": "",
-      "updatedAt": ""
-    }
-  ]
+    "Tasks": [
+        {
+            "CreatedAt": "Wed Aug 27 13:30:58 2025",
+            "Description": "LALALA",
+            "Id": 0,
+            "Status": "todo",
+            "UpdatedAt": ""
+        },
+        {
+            "CreatedAt": "Wed Aug 27 13:30:58 2025",
+            "Description": "The man I want to kill is you",
+            "Id": 1,
+            "Status": "todo",
+            "UpdatedAt": "Wed Aug 27 14:42:08 2025"
+        }
+    ]
 }
