@@ -66,11 +66,11 @@ void updateTask(json& tasks, const string& newDesc, const int idNum = 0) {
 
 }
 
-void updateStatus(json& tasks, const string& newStatus, const int idNum = 0) {
+void updateStatus(json& tasks, const string& newStatus, const int idNum) {
 
     for (auto& task : tasks) {
         if (task["Id"] == idNum) {
-            task["Description"] = newStatus;
+            task["Status"] = newStatus;
             task["UpdatedAt"] = getTime();
             break;
         }
@@ -91,12 +91,31 @@ json jsonInit() {
 void listTasks(json& tasks, const string& status = "") {
 
     for (auto& task : tasks) {
-        if (task["Status"] == status && !status.empty()) {
-            cout << task["Description"] << endl;
+        if (status == "not-done") {
+            if (task["Status"] != "done") {
+                string currDesc = task["Description"];
+                cout << currDesc << endl;
+            }
+        }
+        else if ((task["Status"] == status) || status.empty()) {
+            string currDesc = task["Description"];
+            cout << currDesc << endl;
         }
     }
 
 }
+
+bool isDigit(const string& str) {
+
+    for (auto s : str) {
+        if (isdigit(s)) {
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
 
 int main(int c, char** v) {
 
@@ -147,7 +166,7 @@ int main(int c, char** v) {
     }
 
 
-    if (isdigit(atoi(v2.c_str()))) {
+    if (isDigit(v2)){
         idNum = atoi(v2.c_str());
         desc = v3;
     } else if (v1!="list") {
@@ -155,32 +174,33 @@ int main(int c, char** v) {
     }
 
 
-    ofstream newFile(jsonFile);
-
     if (v1=="add") {
 
         addTask(taskArray, desc);
+        ofstream newFile(jsonFile);
         newFile << taskArray.dump(4);
-    } else if (v1=="update") {
+        exit(1);
+    }
+    if (v1=="update") {
         updateTask(taskArray, desc, idNum);
+        ofstream newFile(jsonFile);
         newFile << taskArray.dump(4);
-    } else if (v1=="delete") {
-        taskDelete(idNum, taskArray);
+        exit(1);
+    }
+    if (v1=="delete") {
+        taskDelete(idNum, taskArray["Tasks"]);
+        ofstream newFile(jsonFile);
         newFile << taskArray.dump(4);
-    } else if (v1=="list") {
+        exit(1);
+    }
+    if (v1=="list") {
+        listTasks(taskArray["Tasks"], v2);
 
-        if (v2 == "done") {
-            listTasks(taskArray, "done");
-        }
-        else if (v2 == "todo") {
-            listTasks(taskArray, "todo");
-        }
-        else if (v2 == "in-progress") {
-            listTasks(taskArray, "in-progress");
-        }
-
-    } else if (v1.substr(0,3) == "mark") {
-        updateStatus(taskArray, v1.substr(5,v1.length()-1),idNum);
+    } else if (v1.substr(0,4) == "mark") {
+        ofstream newFile(jsonFile);
+        updateStatus(taskArray["Tasks"], v1.substr(5,v1.length()-1),idNum);
+        cout << atoi(v2.c_str());
+        newFile << taskArray.dump(4);
     }
 
 }
